@@ -8,30 +8,33 @@ function print_output (){
   YELLOW=`tput setaf 3`
   NC=`tput sgr0`
 
+  name1="${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/'
+  name2=$(echo "${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/')
+
   local m="$1"
   if [  $1 == D  ]
   then
-     echo "${RED}Deleted${NC}: $2"
+     echo "${RED}Deleted${NC}: $name2"
 	 return 0
   fi
 
   #Find file size
-  var=$(stat -f%z "$2")
+  var=$(stat -f%z $name1)
   mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
 
   #Display file depending on git status
   case $1 in
-    M*)   echo "${RED}Modified${NC}: $2 - $mb mb" ;;
-    A*)   echo "${GREEN}Added${NC}: $2 - $mb mb" ;;
-    U*)   echo "${GREEN}Updated${NC}: $2 - $mb mb" ;;
-    C*)   echo "${YELLOW}Copied${NC}: $2 - $mb mb" ;;
-    R*)   echo "${RED}Renamed${NC}: $2 - $mb mb" ;;
-    '??') echo "${RED}Untracked${NC}: $2 - $mb mb" ;;
+    M*)   echo "${RED}Modified${NC}: $name2 - $mb mb" ;;
+    A*)   echo "${GREEN}Added${NC}: $name2 - $mb mb" ;;
+    U*)   echo "${GREEN}Updated${NC}: $name2 - $mb mb" ;;
+    C*)   echo "${YELLOW}Copied${NC}: $name2 - $mb mb" ;;
+    R*)   echo "${RED}Renamed${NC}: $name2 - $mb mb" ;;
+    '??') echo "${RED}Untracked${NC}: $name2 - $mb mb" ;;
   esac
   #$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
   test=$((var/1000000))
   #echo $test
-  if (($test > 100))
+  if (($test > 10))
   then
     return 1
   else

@@ -13,6 +13,14 @@ This is a small custom git command that allows you to see the sizes of all of th
 
 Now it should work! Go to the terminal in any repo, call `git status-size`, and you should recieve an output like the one in the gif above. If you have any files over Github's 100 mb limit, you will be prompted if you want to add these files to your `.gitignore`.
 
+If your file name has Chinese characters, please enter the following command in your command line 
+
+```shell
+git config --global core.quotepath false
+```
+
+
+
 Thanks Joshua Loong for source code. https://github.com/jtloong/git-status-size
 
 ## License

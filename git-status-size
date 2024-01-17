@@ -1,79 +1,77 @@
 #!/bin/bash
 
-function print_output (){
+function print_output() {
 
   #Colors
-  RED=`tput setaf 1`
-  GREEN=`tput setaf 2`
-  YELLOW=`tput setaf 3`
-  NC=`tput sgr0`
+  RED=$(tput setaf 1)
+  GREEN=$(tput setaf 2)
+  YELLOW=$(tput setaf 3)
+  NC=$(tput sgr0)
 
+  name2="${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/'
   name1=$(echo "${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/')
+  echo $name1
 
   local m="$1"
-  if [  $1 == D  ]
-  then
-     echo "${RED}Deleted${NC}: $name1"
-	 return 0
+  if [ $1 == D ]; then
+    echo "${RED}Deleted${NC}: $name1"
+    return 0
   fi
 
   #Find file size
-  var=$(stat -f%z $name1)
+  var=$(stat -f%z ${name2})
   mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
 
   #Display file depending on git status
   case $1 in
-    M*)   echo "${RED}Modified${NC}: $name1 - $mb mb" ;;
-    A*)   echo "${GREEN}Added${NC}: $name1 - $mb mb" ;;
-    U*)   echo "${GREEN}Updated${NC}: $name1 - $mb mb" ;;
-    C*)   echo "${YELLOW}Copied${NC}: $name1 - $mb mb" ;;
-    R*)   echo "${RED}Renamed${NC}: $name1 - $mb mb" ;;
-    '??') echo "${RED}Untracked${NC}: $name1 - $mb mb" ;;
+  M*) echo "${RED}Modified${NC}: $name1 - $mb mb" ;;
+  A*) echo "${GREEN}Added${NC}: $name1 - $mb mb" ;;
+  U*) echo "${GREEN}Updated${NC}: $name1 - $mb mb" ;;
+  C*) echo "${YELLOW}Copied${NC}: $name1 - $mb mb" ;;
+  R*) echo "${RED}Renamed${NC}: $name1 - $mb mb" ;;
+  '??') echo "${RED}Untracked${NC}: $name1 - $mb mb" ;;
   esac
   #$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
-  test=$((var/1000000))
+  test=$((var / 1000000))
   #echo $test
-  if (($test > 10))
-  then
+  if (($test > 10)); then
     return 1
   else
     return 0
   fi
 }
 
-function add_files()
-{
+function add_files() {
   echo $(touch .gitignore)
   while read status; do
-    file=$(cut -d " " -f 2 <<< "$status")
+    file=$(cut -d " " -f 2 <<<"$status")
     var=$(stat -f%z "$file")
-    mb=$((var/1000000))
+    mb=$((var / 1000000))
 
-    if (($mb > 10))
-    then
-      echo $file >> .gitignore
+    if (($mb > 10)); then
+      echo $file >>.gitignore
     fi
-  done < <( git status --porcelain )
+  done < <(git status --porcelain)
 }
 
 large_files=()
 
 while read status_file; do
   print_output $status_file
-  large_files+=( $? )
-done < <( git status --porcelain )
+  large_files+=($?)
+done < <(git status --porcelain)
 
-for i in ${large_files[@]};
-do
-   #echo $i
-   if (($i == 1))
-   then
-     read -p "Do you want to add your large files to your .gitignore? [Y/N] " answer
-     case $answer in
-        [Yy]* ) add_files; break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer Y or N.";;
+for i in ${large_files[@]}; do
+  #echo $i
+  if (($i == 1)); then
+    read -p "Do you want to add your large files to your .gitignore? [Y/N] " answer
+    case $answer in
+    [Yy]*)
+      add_files
+      break
+      ;;
+    [Nn]*) exit ;;
+    *) echo "Please answer Y or N." ;;
     esac
-   fi
+  fi
 done
-

@@ -8,28 +8,26 @@ function print_output() {
   YELLOW=$(tput setaf 3)
   NC=$(tput sgr0)
 
-  name2="${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/'
   name1=$(echo "${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/')
-  echo $name1
 
-  local m="$1"
   if [ $1 == D ]; then
-    echo "${RED}Deleted${NC}: $name1"
+    long_name="${RED}Deleted${NC}: $name1"
+    var=0
     return 0
   fi
 
   #Find file size
-  var=$(stat -f%z ${name2})
+  var=$(stat -f%z "${name1}")
   mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
 
   #Display file depending on git status
   case $1 in
-  M*) echo "${RED}Modified${NC}: $name1 - $mb mb" ;;
-  A*) echo "${GREEN}Added${NC}: $name1 - $mb mb" ;;
-  U*) echo "${GREEN}Updated${NC}: $name1 - $mb mb" ;;
-  C*) echo "${YELLOW}Copied${NC}: $name1 - $mb mb" ;;
-  R*) echo "${RED}Renamed${NC}: $name1 - $mb mb" ;;
-  '??') echo "${RED}Untracked${NC}: $name1 - $mb mb" ;;
+  M*) long_name="${RED}Modified${NC}: $name1 - $mb mb" ;;
+  A*) long_name="${GREEN}Added${NC}: $name1 - $mb mb" ;;
+  U*) long_name="${GREEN}Updated${NC}: $name1 - $mb mb" ;;
+  C*) long_name="${YELLOW}Copied${NC}: $name1 - $mb mb" ;;
+  R*) long_name="${RED}Renamed${NC}: $name1 - $mb mb" ;;
+  '??') long_name="${RED}Untracked${NC}: $name1 - $mb mb" ;;
   esac
   #$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
   test=$((var / 1000000))
@@ -39,6 +37,8 @@ function print_output() {
   else
     return 0
   fi
+
+  return $var
 }
 
 function add_files() {
@@ -59,7 +59,14 @@ large_files=()
 while read status_file; do
   print_output $status_file
   large_files+=($?)
+  size="$var $long_name"
+  size=$size$(echo -e "\n ")
+  size_all=$size_all$size
+  # echo "$size"
 done < <(git status --porcelain)
+
+size_all_n=$(echo "${size_all}" | sort -n | tr -s '\n' | awk '{$1=null;print $0}' | awk '{gsub(/^\s+|\s+$/,"");print}')
+echo "$size_all_n"
 
 for i in ${large_files[@]}; do
   #echo $i

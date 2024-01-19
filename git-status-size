@@ -18,16 +18,22 @@ function print_output() {
 
   #Find file size
   var=$(stat -f%z "${name1}")
-  mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
+  if (($var > 1000000)); then
+    mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
+    unit="mb"
+  else
+    mb=$(awk "BEGIN {printf \"%.1f\",${var}/1000}")
+    unit="kb"
+  fi
 
   #Display file depending on git status
   case $1 in
-  M*) long_name="${RED}Modified${NC}: $name1 - $mb mb" ;;
-  A*) long_name="${GREEN}Added${NC}: $name1 - $mb mb" ;;
-  U*) long_name="${GREEN}Updated${NC}: $name1 - $mb mb" ;;
-  C*) long_name="${YELLOW}Copied${NC}: $name1 - $mb mb" ;;
-  R*) long_name="${RED}Renamed${NC}: $name1 - $mb mb" ;;
-  '??') long_name="${RED}Untracked${NC}: $name1 - $mb mb" ;;
+  M*) long_name="${RED}Modified${NC}: $name1 - $mb $unit" ;;
+  A*) long_name="${GREEN}Added${NC}: $name1 - $mb $unit" ;;
+  U*) long_name="${GREEN}Updated${NC}: $name1 - $mb $unit" ;;
+  C*) long_name="${YELLOW}Copied${NC}: $name1 - $mb $unit" ;;
+  R*) long_name="${RED}Renamed${NC}: $name1 - $mb $unit" ;;
+  '??') long_name="${RED}Untracked${NC}: $name1 - $mb $unit" ;;
   esac
   #$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")
   test=$((var / 1000000))
@@ -44,7 +50,13 @@ function print_output() {
 function add_files() {
   echo $(touch .gitignore)
   while read status; do
+    if [ ${status:0:1} == D ]; then
+      continue
+    fi
+
+    #Find file size
     file=$(cut -d " " -f 2 <<<"$status")
+    file=$(echo "$file" | sed 's/^"\(.*\)"$/\1/')
     var=$(stat -f%z "$file")
     mb=$((var / 1000000))
 
@@ -65,13 +77,12 @@ while read status_file; do
   # echo "$size"
 done < <(git status --porcelain)
 
-size_all_n=$(echo "${size_all}" | sort -n | tr -s '\n' | awk '{$1=null;print $0}' | awk '{gsub(/^\s+|\s+$/,"");print}')
+size_all_n=$(echo "${size_all}" | sort -n | tr -s '\n' | awk '{$1=null;print $0}' | sed '1d' | sed 's/.//')
 echo "$size_all_n"
-
 for i in ${large_files[@]}; do
   #echo $i
   if (($i == 1)); then
-    read -p "Do you want to add your large files to your .gitignore? [Y/N] " answer
+    read -p "Do you want to add your files larger than 10mb to your .gitignore? [Y/N] " answer
     case $answer in
     [Yy]*)
       add_files

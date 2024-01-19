@@ -6,7 +6,7 @@ This is a small custom git command that allows you to see the sizes of all of th
 
 ## Installation
 
-1. `git clone https://github.com/circlelq/git-status-size`
+1. `git clone https://gitee/circlelq/git-status-size`
 2. `cd git-status-size`
 3. To invoke it anywhere you'll need to export the file into your PATH. In your script file use `export PATH="/path/to/your-script/directory:$PATH`
 4. Make it into an executable with `sudo chmod +x git-status-size`
@@ -18,8 +18,6 @@ If your file name has Chinese characters, please enter the following command in 
 ```shell
 git config --global core.quotepath false
 ```
-
-
 
 Thanks Joshua Loong for source code. https://github.com/jtloong/git-status-size
 

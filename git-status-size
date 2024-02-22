@@ -16,6 +16,12 @@ function print_output() {
     return 0
   fi
 
+  if [ $1 == R ]; then
+    long_name="${RED}Renamed${NC}: $name1"
+    var=0
+    return 0
+  fi
+
   #Find file size
   var=$(stat -f%z "${name1}")
   if (($var > 1000000)); then
@@ -32,7 +38,7 @@ function print_output() {
   A*) long_name="${GREEN}Added${NC}: $name1 - $mb $unit" ;;
   U*) long_name="${GREEN}Updated${NC}: $name1 - $mb $unit" ;;
   C*) long_name="${YELLOW}Copied${NC}: $name1 - $mb $unit" ;;
-  R*) long_name="${RED}Renamed${NC}: $name1 - $mb $unit" ;;
+  # R*) long_name="${RED}Renamed${NC}: $name1 - $mb $unit" ;;
   '??') long_name="${RED}Untracked${NC}: $name1 - $mb $unit" ;;
   esac
   #$(awk "BEGIN {printf \"%.1f\",${var}/1000000}")

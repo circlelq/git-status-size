@@ -10,13 +10,15 @@ function print_output() {
 
   name1=$(echo "${*:2:$#-1}" | sed 's/^"\(.*\)"$/\1/')
 
+  Renamed=$1
+
   if [ $1 == D ]; then
     long_name="${RED}Deleted${NC}: $name1"
     var=0
     return 0
   fi
 
-  if [ $1 == R ]; then
+  if [ ${Renamed:0:1} == R ]; then
     long_name="${RED}Renamed${NC}: $name1"
     var=0
     return 0

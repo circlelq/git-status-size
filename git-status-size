@@ -54,6 +54,7 @@ function print_output() {
 
 function add_files() {
   echo $(touch .gitignore)
+  echo >>.gitignore
   while read status; do
     if [ ${status:0:1} == D ]; then
       continue
